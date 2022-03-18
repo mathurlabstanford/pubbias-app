@@ -1,0 +1,13 @@
+.bs-callout {
+  padding: 6px 8px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  border: 1px solid #dee2e6;
+  border-left-width: 0.3rem;
+  border-radius: 0.25rem;
+  border-left-color: purple;
+}
+
+.bs-callout h4 {
+  margin-top: 0px;
+}
