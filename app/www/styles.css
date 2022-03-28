@@ -1,3 +1,10 @@
+img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
+
 .bs-callout {
   padding: 6px 8px;
   margin-top: 6px;
@@ -5,7 +12,14 @@
   border: 1px solid #dee2e6;
   border-left-width: 0.3rem;
   border-radius: 0.25rem;
+}
+
+.bs-callout-output {
   border-left-color: purple;
+}
+
+.bs-callout-info {
+  border-left-color: teal;
 }
 
 .bs-callout h4 {

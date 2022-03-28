@@ -5,10 +5,20 @@ fluidPage(
   title = "Publication bias",
   theme = bslib::bs_theme(bootswatch = "flatly"),
   tags$head(
-    tags$link(rel = "stylesheet", type = "text/css", href = "bs-callout.css")
+    tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
   ),
   
   titlePanel("Sensitivity to publication bias in meta-analysis"),
+  
+  fluidRow(
+    column(
+      width = 7,
+      div(
+        class = "bs-callout bs-callout-info",
+        "Help text goes here"
+      )
+    )
+  ),
   
   fluidRow(
     column(
@@ -31,7 +41,7 @@ fluidPage(
     column(
       width = 4,
       div(
-        class = glue("bs-callout"),
+        class = "bs-callout bs-callout-output",
         h4("Estimate publication bias correction"),
         p("For a chosen ratio of publication probabilities (η) estimate a
           publication bias-corrected pooled point estimate and 95% confidence
@@ -39,6 +49,7 @@ fluidPage(
         uiOutput("eta_slider"),
         uiOutput("uncorrected"),
         uiOutput("corrected"),
+        uiOutput("worst"),
         uiOutput("corrected_summary")
       )
     ),
@@ -46,7 +57,7 @@ fluidPage(
     column(
       width = 4, #offset = 1,
       div(
-        class = glue("bs-callout"),
+        class = "bs-callout bs-callout-output",
         h4('Severity of publication bias needed to "explain away" results'),
         p("Estimate the S-value, defined as the severity of publication bias
           (i.e., the ratio by which affirmative studies are more likely to be
@@ -54,8 +65,6 @@ fluidPage(
           required to shift the pooled point estimate or its confidence interval
           limit to q."),
         uiOutput("q_slider"),
-        # sliderInput("q", "q (risk ratio)", value = 1, min = 0.5, max = 2,
-        #             step = 0.1),
         uiOutput("sval_est"),
         uiOutput("sval_ci"),
         uiOutput("sval_summary")
@@ -69,7 +78,7 @@ fluidPage(
     column(
       width = 4,
       div(
-        class = glue("bs-callout"),
+        class = "bs-callout bs-callout-output",
         h4("Significance funnel plot"),
         p("The estimate among only non-affirmative studies (gray diamond)
           represents a corrected estimate under worst-case publication bias. If
@@ -77,7 +86,9 @@ fluidPage(
           smaller than the pooled estimate among all studies (black diamond),
           this suggests that the meta-analysis may not be robust to extreme
           publication bias."),
-        plotOutput("funnel_plot", height = "400px", width = "450px")
+        plotOutput("funnel_plot", width = "auto", height = "auto"), #, height = "400px", width = "450px"),
+        uiOutput("download_button")
+        # downloadButton("download_funnel")
       )
     )
     ,
