@@ -1,5 +1,9 @@
 library(shiny)
 library(glue)
+library(shinycssloaders)
+# library(shinyjs)
+# useShinyjs()
+options(spinner.color = "#800080")
 
 fluidPage(
   title = "Publication bias",
@@ -47,10 +51,12 @@ fluidPage(
           publication bias-corrected pooled point estimate and 95% confidence
           interval."),
         uiOutput("eta_slider"),
-        uiOutput("uncorrected"),
-        uiOutput("corrected"),
-        uiOutput("worst"),
-        uiOutput("corrected_summary")
+        withSpinner(tagList(
+          uiOutput("uncorrected"),
+          uiOutput("corrected"),
+          uiOutput("worst"),
+          uiOutput("corrected_summary")
+        ))
       )
     ),
     # column(width = 1),
@@ -60,14 +66,16 @@ fluidPage(
         class = "bs-callout bs-callout-output",
         h4('Severity of publication bias needed to "explain away" results'),
         p("Estimate the S-value, defined as the severity of publication bias
-          (i.e., the ratio by which affirmative studies are more likely to be
-          published than non-affirmative studies, or vice versa) that would be
-          required to shift the pooled point estimate or its confidence interval
-          limit to q."),
+          (i.e., the ratio by which studies with positive estimates are more
+          likely to be published than ones with negative estimates, or vice
+          versa) that would be required to shift the pooled point estimate or
+          its confidence interval limit to q."),
         uiOutput("q_slider"),
-        uiOutput("sval_est"),
-        uiOutput("sval_ci"),
-        uiOutput("sval_summary")
+        withSpinner(tagList(
+          uiOutput("sval_est"),
+          uiOutput("sval_ci"),
+          uiOutput("sval_summary")
+        ))
       )
     ),
     # ),
@@ -86,8 +94,10 @@ fluidPage(
           smaller than the pooled estimate among all studies (black diamond),
           this suggests that the meta-analysis may not be robust to extreme
           publication bias."),
-        plotOutput("funnel_plot", width = "auto", height = "auto"), #, height = "400px", width = "450px"),
-        uiOutput("download_button")
+        withSpinner(tagList(
+          plotOutput("funnel_plot", width = "auto", height = "auto"), #, height = "400px", width = "450px"),
+          uiOutput("download_button")
+        )),
         # downloadButton("download_funnel")
       )
     )
