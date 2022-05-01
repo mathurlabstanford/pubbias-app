@@ -18,8 +18,18 @@ fluidPage(
     column(
       width = 7,
       div(
+        # MM: not sure how to add line breaks within this class
+        # <br> also doesn't work
+        # Also, in the citation, could we please link to: https://rss.onlinelibrary.wiley.com/doi/10.1111/rssc.12440
         class = "bs-callout bs-callout-info",
-        "Help text goes here"
+        'This website conducts sensitivity analyses for publication bias in meta-analyses. Please use the following citation:
+        
+        \n\n Mathur MB & VanderWeele TJ (2020). Sensitivity analysis for publication bias in meta-analyses. Journal of the Royal Statistical Society: Series C, 69(5), 1091-1119 \n\n
+        
+        
+        These analyses consider publication bias that favors affirmative studies (i.e., those with positive estimates and significant p-values) over nonaffirmative studies (i.e., those with negative or nonsignificant estimates). These analyses enable statements such as: "For publication bias to shift the observed point estimate to the null, significant results would need to be at least 30-fold more likely to be published than negative or nonsignificant results." Alternatively, you can consider shifting to a chosen non-null value or shifting the confidence interval to include the null or another value.
+        
+        \n\nThis website also provides a worst-case meta-analytic point estimate under maximal publication bias obtained simply by conducting a standard meta-analysis of only the negative and nonsignificant studies.'
       )
     )
   ),
@@ -47,7 +57,7 @@ fluidPage(
       div(
         class = "bs-callout bs-callout-output",
         h4("Estimate publication bias correction"),
-        p("For a chosen ratio of publication probabilities (η) estimate a
+        p("For a chosen ratio of publication probabilities (η), estimate a
           publication bias-corrected pooled point estimate and 95% confidence
           interval."),
         uiOutput("eta_slider"),
@@ -66,8 +76,8 @@ fluidPage(
         class = "bs-callout bs-callout-output",
         h4('Severity of publication bias needed to "explain away" results'),
         p("Estimate the S-value, defined as the severity of publication bias
-          (i.e., the ratio by which studies with positive estimates are more
-          likely to be published than ones with negative estimates, or vice
+          (i.e., the ratio by which affirmative studies are more
+          likely to be published than nonaffirmative studies, or vice
           versa) that would be required to shift the pooled point estimate or
           its confidence interval limit to q."),
         uiOutput("q_slider"),
@@ -88,8 +98,8 @@ fluidPage(
       div(
         class = "bs-callout bs-callout-output",
         h4("Significance funnel plot"),
-        p("The estimate among only non-affirmative studies (gray diamond)
-          represents a corrected estimate under worst-case publication bias. If
+        p("The estimate among only nonaffirmative studies (gray diamond)
+          represents a corrected estimate under worst-case publication bias that favors affirmative results. If
           the gray diamond represents a negligible effect size or if it is much
           smaller than the pooled estimate among all studies (black diamond),
           this suggests that the meta-analysis may not be robust to extreme
