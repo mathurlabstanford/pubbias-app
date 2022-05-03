@@ -195,15 +195,27 @@ shinyServer(function(input, output) {
     estimate_text("corrected", corrected_model())
   })
   
-  output$corrected_summary <- renderUI({
-    req(corrected_model(), positive())
+  corrected_summary <- reactive({
+    req(corrected_model())
     more_likely <- if (positive()) "positive" else "negative"
     less_likely <- if (positive()) "negative" else "positive"
     cm <- corrected_model()
-    p(em(glue("If {more_likely} studies were {input$eta} times more likely
-              to be published than {less_likely} studies, the meta-analytic
-              point estimate corrected for publication bias would be
-              {ci_text(cm$estimate, cm$ci_lower, cm$ci_upper)}.")))
+    glue("If {more_likely} studies were {input$eta} times more likely to be published than {less_likely} studies, the meta-analytic point estimate corrected for publication bias would be {ci_text(cm$estimate, cm$ci_lower, cm$ci_upper)}.")
+  })
+  
+  output$corrected_summary <- renderUI({
+    req(corrected_summary())
+    p(em(corrected_summary()))
+  })
+  
+  output$clip_corrected <- renderUI({
+    req(corrected_summary())
+    rclipButton(
+      inputId = "clipbtn_corrected",
+      label = "",
+      clipText = corrected_summary(), 
+      icon = icon("clipboard")
+    )
   })
   
   # ----------------------------------------------------------------------------
@@ -272,28 +284,40 @@ shinyServer(function(input, output) {
     )),
     br(), sval_print(sval()$sval.ci))
   })
-  
-  output$sval_summary <- renderUI({
+
+  sval_summary <- reactive({
     req(sval())
     more_likely <- if (positive()) "positive" else "negative"
     less_likely <- if (positive()) "negative" else "positive"
     sval_text <- function(var, val) {
       if (str_detect(var, "estimate") & str_detect(val, "Not possible")) {
-        glue("Under this model of publication bias, there is no amount of
-             publication bias that would shift the {var} to 0.")
+        glue("Under this model of publication bias, there is no amount of publication bias that would shift the {var} to 0.")
       } else if (str_detect(var, "bound") & str_detect(val, "--")) {
-        glue("Since the uncorrected CI already contains {input$q}, it is not
-             relevant to consider publication bias to shift the CI to include
-             {input$q}.")
+        glue("Since the uncorrected CI already contains {input$q}, it is not relevant to consider publication bias to shift the CI to include {input$q}.")
       } else {
-        glue("For the {var} corrected for publication bias to shift to
-             {input$q}, {more_likely} studies would need to be {sval_print(val)}
-             times more likely to get published than {less_likely} studies.")
+        glue("For the {var} corrected for publication bias to shift to {input$q}, {more_likely} studies would need to be {sval_print(val)} times more likely to get published than {less_likely} studies.")
       }
     }
-    p(em(paste(sval_text("point estimate", sval()$sval.est),
-               sval_text("CI bound", sval()$sval.ci),
-               collapse = " ")))
+    ss <- paste(sval_text("point estimate", sval()$sval.est),
+                sval_text("CI bound", sval()$sval.ci),
+                sep = "<br>")
+    message(ss)
+    ss
+  })
+  
+  output$sval_summary <- renderUI({
+    p(em(HTML(sval_summary())))
+  })
+  
+  output$clip_sval <- renderUI({
+    req(sval_summary())
+    message(sval_summary())
+    rclipButton(
+      inputId = "clipbtn_sval",
+      label = "",
+      clipText = str_replace(sval_summary(), "<br>", "\n"),
+      icon = icon("clipboard")
+    )
   })
   
   # ----------------------------------------------------------------------------

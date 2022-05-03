@@ -1,15 +1,19 @@
 library(shiny)
 library(shinyFeedback)
-library(glue)
 library(shinycssloaders)
+library(rclipboard)
+library(glue)
 options(spinner.color = "#6f42c1")
 
 fluidPage(
   useShinyFeedback(),
-  title = "Publication bias",
+  rclipboardSetup(),
+  
   theme = bslib::bs_theme(bootswatch = "flatly"),
   includeCSS("www/styles.css"),
   tags$head(tags$base(target = "_blank")),
+  
+  title = "Publication bias",
   
   titlePanel("Sensitivity to publication bias in meta-analysis"),
   
@@ -34,9 +38,7 @@ fluidPage(
         column(width = 2, uiOutput("model_type")),
         column(width = 2, uiOutput("cluster_cols"))
       ),
-      fluidRow(
-        column(width = 11, offset = 2, textInput("error", "")))
-  ),
+      fluidRow(column(width = 11, offset = 2, textInput("error", "")))),
   
   fluidRow(
     column(
@@ -49,7 +51,8 @@ fluidPage(
           uiOutput("uncorrected"),
           uiOutput("corrected"),
           uiOutput("worst"),
-          uiOutput("corrected_summary")
+          uiOutput("corrected_summary"),
+          uiOutput("clip_corrected"),
         ))
       )
     ),
@@ -63,7 +66,8 @@ fluidPage(
         withSpinner(tagList(
           uiOutput("sval_est"),
           uiOutput("sval_ci"),
-          uiOutput("sval_summary")
+          uiOutput("sval_summary"),
+          uiOutput("clip_sval")
         ))
       )
     ),
