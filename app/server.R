@@ -2,6 +2,7 @@ library(shiny)
 library(glue)
 library(tidyverse)
 library(PublicationBias)
+library(markdown)
 
 ci_text <- function(estimate, ci_lower, ci_upper, sig = 2) {
   glue("{signif(estimate, sig)} (95% CI [{signif(ci_lower, sig)},

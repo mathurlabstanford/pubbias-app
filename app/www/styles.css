@@ -23,5 +23,15 @@ img {
 }
 
 .bs-callout h4 {
-  margin-top: 0px;
+  margin-top: 0rem;
+}
+
+.bs-callout p {
+  margin-bottom: .9rem;
+  font-size: 90%;
+}
+
+h2 {
+  margin-top: .5rem;
+  font-size: 2rem;
 }
