@@ -14,24 +14,63 @@ img {
   border-radius: 0.25rem;
 }
 
+.bs-callout-input {
+  border-left-color: var(--dark);
+  background: var(--light);
+}
+
 .bs-callout-output {
-  border-left-color: purple;
+  border-left-color: var(--purple);
 }
 
 .bs-callout-info {
-  border-left-color: teal;
+  border-left-color: var(--cyan);
 }
 
 .bs-callout h4 {
   margin-top: 0rem;
 }
 
-.bs-callout p {
-  margin-bottom: .9rem;
-  font-size: 90%;
+.docs p {
+  margin-bottom: .5rem;
+  font-size: 0.8rem;
 }
 
 h2 {
   margin-top: .5rem;
   font-size: 2rem;
+}
+
+.shiny-file-input-progress {
+  display: none
+}
+
+.shiny-output-error {
+  color: var(--gray);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.selectize-control {
+    margin-bottom: 0px;
+}
+
+.shiny-input-container:not(.shiny-input-container-inline) {
+  width: 100%;
+}
+
+#error, #error-label {
+  display: none;
+}
+
+#error-text p {
+  margin-bottom: 0px;
+}
+
+.bs-callout-input .form-group {
+  margin-bottom: 0px;
+}
+
+.bs-callout-input .row {
+  align-items: flex-end !important;
 }

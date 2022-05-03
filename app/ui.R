@@ -1,36 +1,41 @@
 library(shiny)
+library(shinyFeedback)
 library(glue)
 library(shinycssloaders)
-options(spinner.color = "#800080")
+options(spinner.color = "#6f42c1")
 
 fluidPage(
+  useShinyFeedback(),
   title = "Publication bias",
   theme = bslib::bs_theme(bootswatch = "flatly"),
   includeCSS("www/styles.css"),
-
+  tags$head(tags$base(target = "_blank")),
+  
   titlePanel("Sensitivity to publication bias in meta-analysis"),
   
   fluidRow(
     column(
       width = 8,
       div(class = "bs-callout bs-callout-info",
-          includeMarkdown("docs/header.md"))
+          div(class = "docs", includeMarkdown("docs/header.md")))
     )
   ),
   
-  fluidRow(
-    column(
-      width = 12,
-      inputPanel(
-        fileInput("meta_data", "Upload meta-analysis data (csv)",
-                  accept = ".csv", placeholder = ""),
-        uiOutput("y_cols"),
-        uiOutput("v_cols"),
-        uiOutput("direction"),
-        uiOutput("model_type"),
-        uiOutput("cluster_cols")
-      )
-    )
+  div(class = "bs-callout bs-callout-input",
+      fluidRow(
+        column(
+          width = 2,
+          fileInput("meta_data", "Upload meta-analysis data (csv)",
+                    accept = ".csv", placeholder = "")
+        ),
+        column(width = 2, uiOutput("y_cols")),
+        column(width = 2, uiOutput("v_cols")),
+        column(width = 2, uiOutput("directions")),
+        column(width = 2, uiOutput("model_type")),
+        column(width = 2, uiOutput("cluster_cols"))
+      ),
+      fluidRow(
+        column(width = 11, offset = 2, textInput("error", "")))
   ),
   
   fluidRow(
@@ -38,7 +43,7 @@ fluidPage(
       width = 4,
       div(
         class = "bs-callout bs-callout-output",
-        includeMarkdown("docs/corrected.md"),
+        div(class = "docs", includeMarkdown("docs/corrected.md")),
         uiOutput("eta_slider"),
         withSpinner(tagList(
           uiOutput("uncorrected"),
@@ -53,7 +58,7 @@ fluidPage(
       width = 4,
       div(
         class = "bs-callout bs-callout-output",
-        includeMarkdown("docs/svalue.md"),
+        div(class = "docs", includeMarkdown("docs/svalue.md")),
         uiOutput("q_slider"),
         withSpinner(tagList(
           uiOutput("sval_est"),
@@ -67,10 +72,10 @@ fluidPage(
       width = 4,
       div(
         class = "bs-callout bs-callout-output",
-        includeMarkdown("docs/funnel.md"),
+        div(class = "docs", includeMarkdown("docs/funnel.md")),
         withSpinner(tagList(
-          plotOutput("funnel_plot", width = "auto", height = "auto"),
-          uiOutput("download_button")
+          plotOutput("funnel", width = "auto", height = "auto"),
+          uiOutput("download_funnel_button")
         ))
       )
     )
