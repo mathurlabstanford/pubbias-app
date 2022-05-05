@@ -200,7 +200,7 @@ shinyServer(function(input, output) {
     more_likely <- if (positive()) "positive" else "negative"
     less_likely <- if (positive()) "negative" else "positive"
     cm <- corrected_model()
-    glue("If {more_likely} studies were {input$eta} times more likely to be published than {less_likely} studies, the meta-analytic point estimate corrected for publication bias would be {ci_text(cm$estimate, cm$ci_lower, cm$ci_upper)}.")
+    glue("If affirmative (i.e., significant and {more_likely}) studies were {input$eta} times more likely to be published than nonaffirmative (i.e., nonsignificant or {less_likely}) studies, the meta-analytic point estimate corrected for publication bias would be {ci_text(cm$estimate, cm$ci_lower, cm$ci_upper)}.")
   })
   
   output$corrected_summary <- renderUI({
