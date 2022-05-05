@@ -15,7 +15,7 @@ fluidPage(
   
   title = "Publication bias",
   
-  titlePanel("Sensitivity to publication bias in meta-analysis"),
+  titlePanel("Sensitivity analysis for publication bias in meta-analyses"),
   
   fluidRow(
     column(

@@ -136,7 +136,7 @@ shinyServer(function(input, output) {
     no_nonaff <- sum(!affirm) == 0
     no_either <- no_aff | no_nonaff
     no_dir <- if (no_aff) "affirmative" else if (no_nonaff) "nonaffirmative"
-    error <- glue("there are zero {no_dir} studies – double check your columns and direction")
+    error <- glue("There are zero {no_dir} studies – double check your columns and direction")
     danger("error", no_either, error)
     req(!no_either)
   })
@@ -295,7 +295,7 @@ shinyServer(function(input, output) {
       } else if (str_detect(var, "bound") & str_detect(val, "--")) {
         glue("Since the uncorrected CI already contains {input$q}, it is not relevant to consider publication bias to shift the CI to include {input$q}.")
       } else {
-        glue("For the {var} corrected for publication bias to shift to {input$q}, affirmative (i.e., significant and {more_likely}) studies would need to be {sval_print(val)} times more likely to get published than nonaffirmative (i.e, nonsignificant or {less_likely}) studies.")
+        glue("For the {var} corrected for publication bias to shift to {input$q}, affirmative (i.e., significant and {more_likely}) studies would need to be {sval_print(val)} times more likely to be published than nonaffirmative (i.e, nonsignificant or {less_likely}) studies.")
       }
     }
     ss <- paste(sval_text("point estimate", sval()$sval.est),
