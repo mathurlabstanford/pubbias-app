@@ -5,8 +5,12 @@ library(tidyverse)
 library(PublicationBias)
 library(markdown)
 
+.str <- function(s) {
+  paste(strwrap(glue(s, .envir = parent.frame())), collapse = "")
+}
+
 ci_text <- function(estimate, ci_lower, ci_upper, sig = 2) {
-  glue("{signif(estimate, sig)} (95% CI [{signif(ci_lower, sig)},
+  .str("{signif(estimate, sig)} (95% CI [{signif(ci_lower, sig)},
         {signif(ci_upper, sig)}])")
 }
 estimate_text <- function(model_label, model_result, sig = 2) {
@@ -136,7 +140,8 @@ shinyServer(function(input, output) {
     no_nonaff <- sum(!affirm) == 0
     no_either <- no_aff | no_nonaff
     no_dir <- if (no_aff) "affirmative" else if (no_nonaff) "nonaffirmative"
-    error <- glue("There are zero {no_dir} studies – double check your columns and direction")
+    error <- .str("There are zero {no_dir} studies – double check your columns
+                  and direction")
     danger("error", no_either, error)
     req(!no_either)
   })
@@ -147,7 +152,7 @@ shinyServer(function(input, output) {
   
   output$eta_slider <- renderUI({
     req(uncorrected_model())
-    sliderInput("eta", "η (ratio)", value = 2, min = 1, max = 20, step = 0.1)
+    sliderInput("eta", "η (ratio)", value = 2, min = 1, max = 20, step = 1)
   })
   
   uncorrected_model <- reactive({
@@ -200,19 +205,28 @@ shinyServer(function(input, output) {
     more_likely <- if (positive()) "positive" else "negative"
     less_likely <- if (positive()) "negative" else "positive"
     cm <- corrected_model()
-    glue("If affirmative (i.e., significant and {more_likely}) studies were {input$eta} times more likely to be published than nonaffirmative (i.e., nonsignificant or {less_likely}) studies, the meta-analytic point estimate corrected for publication bias would be {ci_text(cm$estimate, cm$ci_lower, cm$ci_upper)}. If there were worst-case publication bias (i.e., that favors affirmative results infinitely more than nonaffirmative results), the corrected meta-analytic point estimate would be [...].")
+    wm <- worst_model()
+    .str("If affirmative (i.e., significant and {more_likely}) studies were
+         {input$eta} times more likely to be published than nonaffirmative
+         (i.e., nonsignificant or {less_likely}) studies, the meta-analytic
+         point estimate corrected for publication bias would be
+         {ci_text(cm$estimate, cm$ci_lower, cm$ci_upper)}.<br>
+         If there were worst-case publication bias (i.e., that favors
+         affirmative results infinitely more than nonaffirmative results), the
+         corrected meta-analytic point estimate would be
+         {ci_text(wm$estimate, wm$ci_lower, wm$ci_upper)}.")
   })
   
   output$corrected_summary <- renderUI({
     req(corrected_summary())
-    p(em(corrected_summary()))
+    p(em(HTML(corrected_summary())))
   })
   
   output$clip_corrected <- renderUI({
     req(corrected_summary())
     rclipButton(
       inputId = "clipbtn_corrected",
-      label = "",
+      label = "Copy summary",
       clipText = corrected_summary(), 
       icon = icon("clipboard")
     )
@@ -291,18 +305,23 @@ shinyServer(function(input, output) {
     less_likely <- if (positive()) "negative" else "positive"
     sval_text <- function(var, val) {
       if (str_detect(var, "estimate") & str_detect(val, "Not possible")) {
-        glue("Under this model of publication bias, there is no amount of publication bias that would shift the {var} to 0.")
+        .str("Under this model of publication bias, there is no amount of
+             publication bias that would shift the {var} to 0.")
       } else if (str_detect(var, "bound") & str_detect(val, "--")) {
-        glue("Since the uncorrected CI already contains {input$q}, it is not relevant to consider publication bias to shift the CI to include {input$q}.")
+        .str("Since the uncorrected CI already contains {input$q}, it is not
+             relevant to consider publication bias to shift the CI to include
+             {input$q}.")
       } else {
-        glue("For the {var} corrected for publication bias to shift to {input$q}, affirmative (i.e., significant and {more_likely}) studies would need to be {sval_print(val)} times more likely to be published than nonaffirmative (i.e, nonsignificant or {less_likely}) studies.")
+        .str("For the {var} corrected for publication bias to shift to
+             {input$q}, affirmative (i.e., significant and {more_likely})
+             studies would need to be {sval_print(val)} times more likely to be
+             published than nonaffirmative (i.e, nonsignificant or
+             {less_likely}) studies.")
       }
     }
-    ss <- paste(sval_text("point estimate", sval()$sval.est),
-                sval_text("CI bound", sval()$sval.ci),
-                sep = "<br>")
-    message(ss)
-    ss
+    paste(sval_text("point estimate", sval()$sval.est),
+          sval_text("CI bound", sval()$sval.ci),
+          sep = "<br>")
   })
   
   output$sval_summary <- renderUI({
@@ -311,10 +330,10 @@ shinyServer(function(input, output) {
   
   output$clip_sval <- renderUI({
     req(sval_summary())
-    message(sval_summary())
+    # message(sval_summary())
     rclipButton(
       inputId = "clipbtn_sval",
-      label = "",
+      label = "Copy summary",
       clipText = str_replace(sval_summary(), "<br>", "\n"),
       icon = icon("clipboard")
     )
