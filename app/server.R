@@ -102,11 +102,8 @@ shinyServer(function(input, output) {
   cluster_col <- reactive({
     req(input$model_type)
     cc <- input$cluster_col
-    message(cc)
     cluster_none <- !is.null(cc) && str_detect(cc, "none")
-    message(cluster_none)
     fixed <- str_detect(input$model_type, "fixed")
-    message(fixed)
     if (!fixed && (is.null(cc) || cc == "")) return(FALSE) # for robust model, wait for cluster selection
     if (fixed || cluster_none) 1:nrow(meta_data()) else meta_data()[[cc]]
   })

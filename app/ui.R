@@ -5,6 +5,7 @@ library(shinyBS)
 library(rclipboard)
 library(glue)
 options(spinner.color = "#6f42c1")
+options(spinner.type = 1)
 
 fluidPage(
   useShinyFeedback(),
@@ -81,7 +82,7 @@ fluidPage(
         class = "bs-callout bs-callout-output",
         div(class = "docs", includeMarkdown("docs/funnel.md")),
         withSpinner(tagList(
-          plotOutput("funnel", width = "auto", height = "auto"),
+          plotOutput("funnel"),
           uiOutput("download_funnel_button")
         ))
       )
