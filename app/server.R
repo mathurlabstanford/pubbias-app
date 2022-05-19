@@ -2,11 +2,11 @@ library(shiny)
 library(shinyFeedback)
 library(glue)
 library(tidyverse)
-library(PublicationBias)
 library(markdown)
+library(PublicationBias)
 
 # ------------------------------------------------------------------------------
-# helper function for formatting
+# helper functions for formatting
 # ------------------------------------------------------------------------------
 
 .str <- function(s) {
@@ -69,7 +69,7 @@ shinyServer(function(input, output) {
         input$model_type)
     if (input$model_type == "robust") {
       selectInput("cluster_col", "Column of cluster labels",
-                  choices = c("[none]", names(meta_data())))
+                  choices = c("", "[none]", names(meta_data())))
     }
   })
   
@@ -102,8 +102,12 @@ shinyServer(function(input, output) {
   cluster_col <- reactive({
     req(input$model_type)
     cc <- input$cluster_col
+    message(cc)
     cluster_none <- !is.null(cc) && str_detect(cc, "none")
+    message(cluster_none)
     fixed <- str_detect(input$model_type, "fixed")
+    message(fixed)
+    if (!fixed && (is.null(cc) || cc == "")) return(FALSE) # for robust model, wait for cluster selection
     if (fixed || cluster_none) 1:nrow(meta_data()) else meta_data()[[cc]]
   })
   
@@ -162,7 +166,7 @@ shinyServer(function(input, output) {
   })
   
   uncorrected_model <- reactive({
-    req(valid_y(), valid_v(), input$model_type, valid_affirm())
+    req(valid_y(), valid_v(), input$model_type, valid_affirm(), cluster_col())
     if (input$model_type == "fixed") {
       meta_model <- metafor::rma(yi = y_vals(), vi = v_vals(), method = "FE")
       meta_result <- list(estimate = meta_model$beta,
@@ -295,8 +299,10 @@ shinyServer(function(input, output) {
   
   output$sval_est <- renderUI({
     req(sval())
-    p(strong(glue("Publication bias required to shift point estimate to {input$q}:")),
-      br(), sval_print(sval()$sval.est))
+    p(strong(
+      glue("Publication bias required to shift point estimate to {input$q}:")),
+      br(), sval_print(sval()$sval.est)
+    )
   })
   
   output$sval_ci <- renderUI({
@@ -304,7 +310,7 @@ shinyServer(function(input, output) {
     p(strong(glue("Publication bias required to shift CI limit to {input$q}:")),
       br(), sval_print(sval()$sval.ci))
   })
-
+  
   sval_summary <- reactive({
     req(sval())
     more_likely <- if (positive()) "positive" else "negative"

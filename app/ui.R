@@ -1,6 +1,7 @@
 library(shiny)
 library(shinyFeedback)
 library(shinycssloaders)
+library(shinyBS)
 library(rclipboard)
 library(glue)
 options(spinner.color = "#6f42c1")
@@ -33,7 +34,9 @@ fluidPage(
                     accept = ".csv", placeholder = "")
         ),
         column(width = 2, uiOutput("y_cols")),
+        bsTooltip("y_cols", "bem"),
         column(width = 2, uiOutput("v_cols")),
+        bsPopover("v_cols", "bem2", "bem???"),
         column(width = 2, uiOutput("directions")),
         column(width = 2, uiOutput("model_type")),
         column(width = 2, uiOutput("cluster_cols"))
