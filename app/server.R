@@ -26,11 +26,11 @@ estimate_text <- function(model_label, model_result, sig = 2) {
 sval_print <- function(sval) if (is.numeric(sval)) signif(sval, 2) else sval
 
 danger <- function(inputId, show, text) {
-  feedbackDanger(inputId, show, text, color = "var(--red)", icon = NULL)
+  feedbackDanger(inputId, show, text, color = "#e74c3c", icon = NULL)
 }
 
 warn <- function(inputId, show, text) {
-  feedbackWarning(inputId, show, text, color = "var(--yellow)", icon = NULL)
+  feedbackWarning(inputId, show, text, color = "#f39c12", icon = NULL)
 }
 
 shinyServer(function(input, output) {
@@ -52,7 +52,7 @@ shinyServer(function(input, output) {
   })
   
   output$directions <- renderUI({
-    req(input$v_col)
+    req(input$meta_data, input$v_col)
     selectInput("direction", "Direction", #selected = dir,
                 choices = c("favor positive", "favor negative"))
   })

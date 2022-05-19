@@ -1,17 +1,21 @@
 library(shiny)
+library(shinythemes)
 library(shinyFeedback)
 library(shinycssloaders)
 library(shinyBS)
 library(rclipboard)
 library(glue)
-options(spinner.color = "#6f42c1")
+options(spinner.color = "#3498db")
 options(spinner.type = 1)
+
+tooltips <- yaml::read_yaml("docs/tooltips.yaml")
+tooltip <- function(tt) bsTooltip(tt, tooltips[[tt]]$text, placement = "top")
 
 fluidPage(
   useShinyFeedback(),
   rclipboardSetup(),
   
-  theme = bslib::bs_theme(bootswatch = "flatly"),
+  theme = shinytheme("flatly"),
   includeCSS("www/styles.css"),
   tags$head(tags$base(target = "_blank")),
   
@@ -24,7 +28,7 @@ fluidPage(
       width = 8,
       div(class = "bs-callout bs-callout-info",
           div(class = "docs", includeMarkdown("docs/header.md")))
-    )
+    ),
   ),
   
   div(class = "bs-callout bs-callout-input",
@@ -34,13 +38,11 @@ fluidPage(
           fileInput("meta_data", "Upload meta-analysis data (csv)",
                     accept = ".csv", placeholder = "")
         ),
-        column(width = 2, uiOutput("y_cols")),
-        bsTooltip("y_cols", "bem"),
-        column(width = 2, uiOutput("v_cols")),
-        bsPopover("v_cols", "bem2", "bem???"),
-        column(width = 2, uiOutput("directions")),
-        column(width = 2, uiOutput("model_type")),
-        column(width = 2, uiOutput("cluster_cols"))
+        column(width = 2, uiOutput("y_cols")), tooltip("y_cols"),
+        column(width = 2, uiOutput("v_cols")), tooltip("v_cols"),
+        column(width = 2, uiOutput("directions")), tooltip("directions"),
+        column(width = 2, uiOutput("model_type")), tooltip("model_type"),
+        column(width = 2, uiOutput("cluster_cols")), tooltip("cluster_cols"),
       ),
       fluidRow(column(width = 11, offset = 2, textInput("error", "")))),
   
@@ -50,7 +52,7 @@ fluidPage(
       div(
         class = "bs-callout bs-callout-output",
         div(class = "docs", includeMarkdown("docs/corrected.md")),
-        uiOutput("eta_slider"),
+        uiOutput("eta_slider"), tooltip("eta_slider"),
         withSpinner(tagList(
           uiOutput("uncorrected"),
           uiOutput("corrected"),
@@ -66,7 +68,7 @@ fluidPage(
       div(
         class = "bs-callout bs-callout-output",
         div(class = "docs", includeMarkdown("docs/svalue.md")),
-        uiOutput("q_slider"),
+        uiOutput("q_slider"), tooltip("q_slider"),
         withSpinner(tagList(
           uiOutput("sval_est"),
           uiOutput("sval_ci"),

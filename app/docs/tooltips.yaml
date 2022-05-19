@@ -1,0 +1,20 @@
+y_cols:
+  text: y_col
+  
+v_cols:
+  text: v_col
+
+directions:
+  text: direction
+
+model_type:
+  text: model_type
+
+cluster_cols:
+  text: cluster_col
+
+eta_slider:
+  text: eta
+
+q_slider:
+  text: q
