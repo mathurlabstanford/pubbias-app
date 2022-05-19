@@ -5,6 +5,10 @@ library(tidyverse)
 library(PublicationBias)
 library(markdown)
 
+# ------------------------------------------------------------------------------
+# helper function for formatting
+# ------------------------------------------------------------------------------
+
 .str <- function(s) {
   paste(strwrap(glue(s, .envir = parent.frame())), collapse = "")
 }
@@ -23,6 +27,10 @@ sval_print <- function(sval) if (is.numeric(sval)) signif(sval, 2) else sval
 
 danger <- function(inputId, show, text) {
   feedbackDanger(inputId, show, text, color = "var(--red)", icon = NULL)
+}
+
+warn <- function(inputId, show, text) {
+  feedbackWarning(inputId, show, text, color = "var(--yellow)", icon = NULL)
 }
 
 shinyServer(function(input, output) {
@@ -66,7 +74,7 @@ shinyServer(function(input, output) {
   })
   
   # ----------------------------------------------------------------------------
-  # values based on overall inputs
+  # reactive values based on overall inputs
   # ----------------------------------------------------------------------------
   
   meta_data <- reactive({
@@ -101,13 +109,11 @@ shinyServer(function(input, output) {
   
   y_vals <- reactive({
     req(meta_data(), input$y_col)
-    # req(input$y_col)
     meta_data()[[input$y_col]]
   })
   
   v_vals <- reactive({
     req(meta_data(), input$v_col)
-    # req(input$v_col)
     meta_data()[[input$v_col]]
   })
   
@@ -141,7 +147,7 @@ shinyServer(function(input, output) {
     no_either <- no_aff | no_nonaff
     no_dir <- if (no_aff) "affirmative" else if (no_nonaff) "nonaffirmative"
     error <- .str("There are zero {no_dir} studies – double check your columns
-                  and direction")
+                  and direction.")
     danger("error", no_either, error)
     req(!no_either)
   })
@@ -156,7 +162,7 @@ shinyServer(function(input, output) {
   })
   
   uncorrected_model <- reactive({
-    req(valid_y(), valid_v(), input$model_type)
+    req(valid_y(), valid_v(), input$model_type, valid_affirm())
     if (input$model_type == "fixed") {
       meta_model <- metafor::rma(yi = y_vals(), vi = v_vals(), method = "FE")
       meta_result <- list(estimate = meta_model$beta,
@@ -173,6 +179,10 @@ shinyServer(function(input, output) {
                           ci_lower = meta_model$reg_table$CI.L,
                           ci_upper = meta_model$reg_table$CI.U)
     }
+    opposite_dir <- meta_result$estimate < 0 & positive() |
+      meta_result$estimate > 0 & !positive()
+    warn("error", opposite_dir,
+         "Warning: favored direction is opposite of the pooled estimate.")
     meta_result
   })
   
@@ -285,18 +295,14 @@ shinyServer(function(input, output) {
   
   output$sval_est <- renderUI({
     req(sval())
-    p(strong(glue(
-      "Publication bias required to shift point estimate to {input$q}:"
-    )),
-    br(), sval_print(sval()$sval.est))
+    p(strong(glue("Publication bias required to shift point estimate to {input$q}:")),
+      br(), sval_print(sval()$sval.est))
   })
   
   output$sval_ci <- renderUI({
     req(sval())
-    p(strong(glue(
-      "Publication bias required to shift CI limit to {input$q}:"
-    )),
-    br(), sval_print(sval()$sval.ci))
+    p(strong(glue("Publication bias required to shift CI limit to {input$q}:")),
+      br(), sval_print(sval()$sval.ci))
   })
 
   sval_summary <- reactive({
@@ -330,7 +336,6 @@ shinyServer(function(input, output) {
   
   output$clip_sval <- renderUI({
     req(sval_summary())
-    # message(sval_summary())
     rclipButton(
       inputId = "clipbtn_sval",
       label = "Copy summary",
