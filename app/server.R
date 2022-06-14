@@ -10,7 +10,7 @@ library(PublicationBias)
 # ------------------------------------------------------------------------------
 
 .str <- function(s) {
-  paste(strwrap(glue(s, .envir = parent.frame())), collapse = "")
+  paste(strwrap(glue(s, .envir = parent.frame())), collapse = " ")
 }
 
 ci_text <- function(estimate, ci_lower, ci_upper, sig = 2) {
