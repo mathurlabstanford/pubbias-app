@@ -84,7 +84,7 @@ fluidPage(
         class = "bs-callout bs-callout-output",
         div(class = "docs", includeMarkdown("docs/funnel.md")),
         withSpinner(tagList(
-          plotOutput("funnel"),
+          plotOutput("funnel", inline = TRUE), #height = "auto"),
           uiOutput("download_funnel_button")
         ))
       )

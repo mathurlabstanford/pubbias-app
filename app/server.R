@@ -42,13 +42,13 @@ shinyServer(function(input, output) {
   output$y_cols <- renderUI({
     req(input$meta_data)
     selectInput("y_col", "Column of point estimates",
-                choices = c("Select a column" = "", names(meta_data())))
+                choices = c("Select a column" = "", names(meta_data_raw())))
   })
   
   output$v_cols <- renderUI({
     req(input$meta_data)
     selectInput("v_col", "Column of estimated variances",
-                choices = c("Select a column" = "", names(meta_data())))
+                choices = c("Select a column" = "", names(meta_data_raw())))
   })
   
   output$directions <- renderUI({
@@ -69,7 +69,7 @@ shinyServer(function(input, output) {
         input$model_type)
     if (input$model_type == "robust") {
       selectInput("cluster_col", "Column of cluster labels",
-                  choices = c("", "[none]", names(meta_data())))
+                  choices = c("", "[none]", names(meta_data_raw())))
     }
   })
   
@@ -77,7 +77,7 @@ shinyServer(function(input, output) {
   # reactive values based on overall inputs
   # ----------------------------------------------------------------------------
   
-  meta_data <- reactive({
+  meta_data_raw <- reactive({
     meta_file <- input$meta_data
     ext <- tools::file_ext(meta_file$datapath)
     req(meta_file)
@@ -92,6 +92,12 @@ shinyServer(function(input, output) {
     #                               ci = cpos, di = cneg, data = metafor::dat.bcg)
     # example_df$yi <- -example_df$yi
     # example_df
+  })
+  
+  meta_data <- reactive({
+    req(input$meta_data, input$y_col, input$v_col)
+    meta_data_raw() |>
+      filter(!is.na(.data[[input$y_col]]), !is.na(.data[[input$v_col]]))
   })
   
   positive <- reactive({
@@ -313,7 +319,7 @@ shinyServer(function(input, output) {
     more_likely <- if (positive()) "positive" else "negative"
     less_likely <- if (positive()) "negative" else "positive"
     sval_text <- function(var, val) {
-      if (str_detect(var, "estimate") & str_detect(val, "Not possible")) {
+      if (str_detect(val, "Not possible")) {
         .str("Under this model of publication bias, there is no amount of
              publication bias that would shift the {var} to 0.")
       } else if (str_detect(var, "bound") & str_detect(val, "--")) {
@@ -352,7 +358,7 @@ shinyServer(function(input, output) {
   # ----------------------------------------------------------------------------
   
   funnel_plot <- function() {
-    significance_funnel(yi = meta_data()$yi, vi = meta_data()$vi,
+    significance_funnel(yi = y_vals(), vi = v_vals(),
                         favor.positive = positive(),
                         est.all = uncorrected_model()$estimate,
                         est.N = worst_model()$estimate) +
@@ -365,11 +371,10 @@ shinyServer(function(input, output) {
   fp_width <- 1200
   fp_height <- 1100
   
-  output$funnel <- renderPlot(res = fp_res, height = fp_height,
-                              width = fp_width, {
-                                req(uncorrected_model(), worst_model())
-                                funnel_plot()
-                              })
+  output$funnel <- renderPlot({
+    req(uncorrected_model(), worst_model())
+    funnel_plot()
+  }, res = fp_res, height = fp_height, width = fp_width)
   
   output$download_funnel <- downloadHandler(
     filename = function() {
