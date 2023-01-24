@@ -147,7 +147,7 @@ shinyServer(function(input, output) {
     
     if (positive()) yi = y_vals() else yi = -y_vals()
     pvals <- 2 * (1 - pnorm(abs(yi) / sqrt(v_vals())))
-    alpha <- formals(PublicationBias::corrected_meta)$alpha.select
+    alpha <- formals(PublicationBias::pubbias_meta)$alpha.select
     affirm <- (pvals < alpha) & (yi > 0)
     no_aff <- sum(affirm) == 0
     no_nonaff <- sum(!affirm) == 0
@@ -160,7 +160,7 @@ shinyServer(function(input, output) {
   })
   
   # ----------------------------------------------------------------------------
-  # corrected_meta
+  # pubbias_meta
   # ----------------------------------------------------------------------------
   
   output$eta_slider <- renderUI({
@@ -196,12 +196,12 @@ shinyServer(function(input, output) {
   corrected_model <- reactive({
     req(input$eta, valid_y(), valid_v(), valid_affirm(),
         input$model_type, cluster_col())
-    meta_model <- corrected_meta(yi = meta_data()[[input$y_col]],
-                                 vi = meta_data()[[input$v_col]],
-                                 eta = input$eta,
-                                 clustervar = cluster_col(),
-                                 model = input$model_type,
-                                 favor.positive = positive())
+    meta_model <- pubbias_meta(yi = meta_data()[[input$y_col]],
+                               vi = meta_data()[[input$v_col]],
+                               eta = input$eta,
+                               clustervar = cluster_col(),
+                               model = input$model_type,
+                               favor.positive = positive())
     return(list(estimate = meta_model$est,
                 ci_lower = meta_model$lo,
                 ci_upper = meta_model$hi))
@@ -256,13 +256,13 @@ shinyServer(function(input, output) {
   sval_model <- reactive({
     req(input$q, valid_y(), valid_v(), valid_affirm(),
         input$model_type, cluster_col())
-    sval <- svalue(yi = meta_data()[[input$y_col]],
-                   vi = meta_data()[[input$v_col]],
-                   q = input$q,
-                   clustervar = cluster_col(),
-                   favor.positive = positive(),
-                   model = input$model_type,
-                   return.worst.meta = TRUE)
+    sval <- pubbias_svalue(yi = meta_data()[[input$y_col]],
+                           vi = meta_data()[[input$v_col]],
+                           q = input$q,
+                           clustervar = cluster_col(),
+                           favor.positive = positive(),
+                           model = input$model_type,
+                           return.worst.meta = TRUE)
     return(sval)
   })
   
