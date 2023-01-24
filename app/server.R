@@ -146,8 +146,9 @@ shinyServer(function(input, output) {
     req(y_vals(), v_vals(), input$direction)
     
     if (positive()) yi = y_vals() else yi = -y_vals()
+    # TODO: could this not duplicate affirm calculation?
     pvals <- 2 * (1 - pnorm(abs(yi) / sqrt(v_vals())))
-    alpha <- formals(PublicationBias::pubbias_meta)$alpha.select
+    alpha <- formals(PublicationBias::pubbias_meta)$alpha_select
     affirm <- (pvals < alpha) & (yi > 0)
     no_aff <- sum(affirm) == 0
     no_nonaff <- sum(!affirm) == 0
@@ -165,9 +166,10 @@ shinyServer(function(input, output) {
   
   output$eta_slider <- renderUI({
     req(uncorrected_model())
-    sliderInput("eta", "η (ratio)", value = 2, min = 1, max = 20, step = 1)
+    sliderInput("eta", "Selection ratio", value = 2, min = 1, max = 20, step = 1)
   })
   
+  # TODO: run pubbias_meta with selection_ratio 1 instead?
   uncorrected_model <- reactive({
     req(valid_y(), valid_v(), input$model_type, valid_affirm(), cluster_col())
     if (input$model_type == "fixed") {
@@ -182,9 +184,10 @@ shinyServer(function(input, output) {
                                    data = meta_data(),
                                    var.eff.size = v_vals(),
                                    small = TRUE)
-      meta_result <- list(estimate = meta_model$reg_table$b.r,
-                          ci_lower = meta_model$reg_table$CI.L,
-                          ci_upper = meta_model$reg_table$CI.U)
+      meta_result <- metabias::robu_ci(meta_model)
+      # meta_result <- list(estimate = meta_model$reg_table$b.r,
+      #                     ci_lower = meta_model$reg_table$CI.L,
+      #                     ci_upper = meta_model$reg_table$CI.U)
     }
     opposite_dir <- meta_result$estimate < 0 & positive() |
       meta_result$estimate > 0 & !positive()
@@ -198,13 +201,14 @@ shinyServer(function(input, output) {
         input$model_type, cluster_col())
     meta_model <- pubbias_meta(yi = meta_data()[[input$y_col]],
                                vi = meta_data()[[input$v_col]],
-                               eta = input$eta,
-                               clustervar = cluster_col(),
-                               model = input$model_type,
-                               favor.positive = positive())
-    return(list(estimate = meta_model$est,
-                ci_lower = meta_model$lo,
-                ci_upper = meta_model$hi))
+                               selection_ratio = input$eta,
+                               cluster = cluster_col(),
+                               model_type = input$model_type,
+                               favor_positive = positive())
+    return(meta_model$stats)
+    # return(list(estimate = meta_model$stats$estimate,
+    #             ci_lower = meta_model$stats$ci_lower,
+    #             ci_upper = meta_model$stats$ci_upper))
   })
   
   output$uncorrected <- renderUI({
@@ -259,10 +263,10 @@ shinyServer(function(input, output) {
     sval <- pubbias_svalue(yi = meta_data()[[input$y_col]],
                            vi = meta_data()[[input$v_col]],
                            q = input$q,
-                           clustervar = cluster_col(),
-                           favor.positive = positive(),
-                           model = input$model_type,
-                           return.worst.meta = TRUE)
+                           cluster = cluster_col(),
+                           favor_positive = positive(),
+                           model_type = input$model_type,
+                           return_worst_meta = TRUE)
     return(sval)
   })
   
@@ -273,15 +277,16 @@ shinyServer(function(input, output) {
   
   worst_model <- reactive({
     req(sval_model())
-    meta_model <- sval_model()$meta.worst
+    meta_model <- sval_model()$meta_worst
     if (input$model_type == "fixed") {
       meta_result <- list(estimate = meta_model$beta,
                           ci_lower = meta_model$ci.lb,
                           ci_upper = meta_model$ci.ub)
     } else if (input$model_type == "robust") {
-      meta_result <- list(estimate = meta_model$reg_table$b.r,
-                          ci_lower = meta_model$reg_table$CI.L,
-                          ci_upper = meta_model$reg_table$CI.U)
+      meta_result <- metabias::robu_ci(meta_model)
+      # meta_result <- list(estimate = meta_model$reg_table$b.r,
+      #                     ci_lower = meta_model$reg_table$CI.L,
+      #                     ci_upper = meta_model$reg_table$CI.U)
     }
     meta_result
   })
@@ -304,14 +309,14 @@ shinyServer(function(input, output) {
     req(sval())
     p(strong(
       glue("Publication bias required to shift point estimate to {input$q}:")),
-      br(), sval_print(sval()$sval.est)
+      br(), sval_print(sval()$sval_est)
     )
   })
   
   output$sval_ci <- renderUI({
     req(sval())
     p(strong(glue("Publication bias required to shift CI limit to {input$q}:")),
-      br(), sval_print(sval()$sval.ci))
+      br(), sval_print(sval()$sval_ci))
   })
   
   sval_summary <- reactive({
@@ -334,8 +339,8 @@ shinyServer(function(input, output) {
              {less_likely}) studies.")
       }
     }
-    paste(sval_text("point estimate", sval()$sval.est),
-          sval_text("CI bound", sval()$sval.ci),
+    paste(sval_text("point estimate", sval()$sval_est),
+          sval_text("CI bound", sval()$sval_ci),
           sep = "<br>")
   })
   
@@ -359,9 +364,9 @@ shinyServer(function(input, output) {
   
   funnel_plot <- function() {
     significance_funnel(yi = y_vals(), vi = v_vals(),
-                        favor.positive = positive(),
-                        est.all = uncorrected_model()$estimate,
-                        est.N = worst_model()$estimate) +
+                        favor_positive = positive(),
+                        est_all = uncorrected_model()$estimate,
+                        est_worst = worst_model()$estimate) +
       theme_classic(base_family = "Lato") +
       theme(legend.position = "top",
             legend.title = element_blank())
