@@ -35,34 +35,21 @@
         "lattice"
       ]
     },
-    "MetaUtility": {
-      "Package": "MetaUtility",
-      "Version": "2.1.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "02ba31cbf4dabba305b71660e6637f68",
-      "Requirements": [
-        "dplyr",
-        "metadat",
-        "metafor",
-        "purrr",
-        "rlang",
-        "stringr",
-        "tidyr"
-      ]
-    },
     "PublicationBias": {
       "Package": "PublicationBias",
-      "Version": "2.2.0",
+      "Version": "2.3.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "39215eb7ef0fd8a4b72456be8f7b301f",
+      "Hash": "95c43b3784d393158814ff6644808fa1",
       "Requirements": [
-        "MetaUtility",
         "Rdpack",
         "dplyr",
         "ggplot2",
+        "glue",
+        "lifecycle",
+        "metabias",
         "metafor",
+        "rlang",
         "robumeta"
       ]
     },
@@ -757,6 +744,16 @@
       "Repository": "CRAN",
       "Hash": "87da6ccdcee6077a7d5719406bf3ae45",
       "Requirements": []
+    },
+    "metabias": {
+      "Package": "metabias",
+      "Version": "0.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e71f53a7b283b02ceeff694acc11d2c2",
+      "Requirements": [
+        "Rdpack"
+      ]
     },
     "metadat": {
       "Package": "metadat",
