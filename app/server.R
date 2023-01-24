@@ -79,8 +79,8 @@ shinyServer(function(input, output) {
   
   meta_data_raw <- reactive({
     meta_file <- input$meta_data
-    ext <- tools::file_ext(meta_file$datapath)
-    req(meta_file)
+    # ext <- tools::file_ext(meta_file$datapath)
+    # req(meta_file)
     # validate(need(ext == "csv", "Please upload a csv file"))
     # danger("meta_data", ext == "csv", "please upload a csv file")
     read_csv(meta_file$datapath, show_col_types = FALSE)
@@ -166,7 +166,7 @@ shinyServer(function(input, output) {
   
   output$eta_slider <- renderUI({
     req(uncorrected_model())
-    sliderInput("eta", "Selection ratio", value = 2, min = 1, max = 20, step = 1)
+    sliderInput("eta", "Selection ratio (η)", value = 2, min = 1, max = 20, step = 1)
   })
   
   # TODO: run pubbias_meta with selection_ratio 1 instead?
@@ -185,9 +185,6 @@ shinyServer(function(input, output) {
                                    var.eff.size = v_vals(),
                                    small = TRUE)
       meta_result <- metabias::robu_ci(meta_model)
-      # meta_result <- list(estimate = meta_model$reg_table$b.r,
-      #                     ci_lower = meta_model$reg_table$CI.L,
-      #                     ci_upper = meta_model$reg_table$CI.U)
     }
     opposite_dir <- meta_result$estimate < 0 & positive() |
       meta_result$estimate > 0 & !positive()
@@ -196,19 +193,24 @@ shinyServer(function(input, output) {
     meta_result
   })
   
-  corrected_model <- reactive({
+  meta_model <- reactive({
     req(input$eta, valid_y(), valid_v(), valid_affirm(),
         input$model_type, cluster_col())
-    meta_model <- pubbias_meta(yi = meta_data()[[input$y_col]],
-                               vi = meta_data()[[input$v_col]],
-                               selection_ratio = input$eta,
-                               cluster = cluster_col(),
-                               model_type = input$model_type,
-                               favor_positive = positive())
-    return(meta_model$stats)
-    # return(list(estimate = meta_model$stats$estimate,
-    #             ci_lower = meta_model$stats$ci_lower,
-    #             ci_upper = meta_model$stats$ci_upper))
+    pubbias_meta(yi = meta_data()[[input$y_col]],
+                 vi = meta_data()[[input$v_col]],
+                 selection_ratio = input$eta,
+                 cluster = cluster_col(),
+                 model_type = input$model_type,
+                 favor_positive = positive(),
+                 return_worst_meta = TRUE)
+  })
+  
+  corrected_model <- reactive({
+    meta_model()$stats |> filter(model == "pubbias")
+  })
+
+  worst_model <- reactive({
+    meta_model()$stats |> filter(model == "worst_case")
   })
   
   output$uncorrected <- renderUI({
@@ -219,6 +221,11 @@ shinyServer(function(input, output) {
   output$corrected <- renderUI({
     req(corrected_model())
     estimate_text("corrected", corrected_model())
+  })
+  
+  output$worst <- renderUI({
+    req(worst_model())
+    estimate_text("worst-case", worst_model())
   })
   
   corrected_summary <- reactive({
@@ -260,40 +267,17 @@ shinyServer(function(input, output) {
   sval_model <- reactive({
     req(input$q, valid_y(), valid_v(), valid_affirm(),
         input$model_type, cluster_col())
-    sval <- pubbias_svalue(yi = meta_data()[[input$y_col]],
-                           vi = meta_data()[[input$v_col]],
-                           q = input$q,
-                           cluster = cluster_col(),
-                           favor_positive = positive(),
-                           model_type = input$model_type,
-                           return_worst_meta = TRUE)
-    return(sval)
+    pubbias_svalue(yi = meta_data()[[input$y_col]],
+                   vi = meta_data()[[input$v_col]],
+                   q = input$q,
+                   cluster = cluster_col(),
+                   favor_positive = positive(),
+                   model_type = input$model_type)
   })
   
   sval <- reactive({
     req(sval_model())
     sval_model()$stats
-  })
-  
-  worst_model <- reactive({
-    req(sval_model())
-    meta_model <- sval_model()$meta_worst
-    if (input$model_type == "fixed") {
-      meta_result <- list(estimate = meta_model$beta,
-                          ci_lower = meta_model$ci.lb,
-                          ci_upper = meta_model$ci.ub)
-    } else if (input$model_type == "robust") {
-      meta_result <- metabias::robu_ci(meta_model)
-      # meta_result <- list(estimate = meta_model$reg_table$b.r,
-      #                     ci_lower = meta_model$reg_table$CI.L,
-      #                     ci_upper = meta_model$reg_table$CI.U)
-    }
-    meta_result
-  })
-  
-  output$worst <- renderUI({
-    req(worst_model())
-    estimate_text("worst-case", worst_model())
   })
   
   output$q_slider <- renderUI({
